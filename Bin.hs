@@ -10,7 +10,7 @@ data Tile = Wall | Path | Pellet | Ghost
   deriving (Eq, Show)
 
 --The type of binary tree 
-data BinaryTree = L 
+data BinaryTree = L Tile
                 | Node Tile BinaryTree BinaryTree
   deriving (Eq, Show)
 
