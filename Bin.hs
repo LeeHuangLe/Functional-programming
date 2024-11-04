@@ -26,8 +26,8 @@ data BinCxt = Hole
 -- tree is accomplished by the following function
 plug :: BinCxt -> Bin -> Bin
 plug  Hole      t = t
-plug (B0 c t2) t = plug c (N EmptyTile t t2)
-plug (B1 t1 c) t = plug c (N EmptyTile t1 t)
+plug (B0 c t2) t = plug c (N _ EmptyTile t t2)
+plug (B1 t1 c) t = plug c (N _ EmptyTile t1 t)
 
 -- A zipper is a pair of a one-hole context c and a tree t, which we
 -- think of as defining a pointer to t as a subtree of u = plug c t.
