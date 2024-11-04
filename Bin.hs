@@ -12,7 +12,6 @@ data Tile = Wall | Path | Pellet | Ghost | EmptyTile
 --The type of binary tree 
 data Bin  = L Int Tile 
             | N Int Tile Bin Bin
-
   deriving (Eq, Show)
 
 -- a "one-hole context" for a binary tree may be thought of as a
