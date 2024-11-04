@@ -7,9 +7,9 @@ import Control.Concurrent (threadDelay)
 
 -- a small binary tree
 smallTree :: Bin
-smallTree = Node Pacman 
+smallTree = N Pacman 
              (L Pellet) 
-             (Node Wall (L EmptyTile) (L Pacman))
+             (N Wall (L EmptyTile) (L Pacman))
 
 -- the top-level interactive loop
 repl :: IO ()
@@ -23,7 +23,7 @@ repl = do
       let (_, t) = z                                          -- give the player some information
       case z of                                        -- about the current position in the tree
         L tile -> putStrLn $ "You see a leaf. It contains: " ++ show tile
-        Node tile _ _ -> putStrLn $ "You see a node. It contains: " ++ show tile
+        N tile _ _ -> putStrLn $ "You see a node. It contains: " ++ show tile
       putStr "> "                                      -- print the prompt
       hFlush stdout                                    -- flush standard output
       line <- getLine                                  -- get a line of input
@@ -53,7 +53,7 @@ repl = do
                        L Wall -> do
                          putStrLn $ "You cannot move " ++ dir ++ ", there's a Wall."
                          go z
-                       Node Wall _ _ -> do
+                       N Wall _ _ -> do
                          putStrLn $ "You cannot move " ++ dir ++ ", there's a Wall."
                          go z
                        _ -> go newZ
