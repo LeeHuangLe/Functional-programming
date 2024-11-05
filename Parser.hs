@@ -104,7 +104,7 @@ number = do
 -- parseCmd is our general-purpose parser for commands, which can be
 -- either climbing commands, meditation commands, or quitting.
 parseCmd :: Parser String Cmd
-parseCmd = parseClimb <|> parseMeditate <|> parseQuit
+parseCmd = parseClimb <|> parseQuit
 
 -- Parse a climbing command.
 parseClimb :: Parser String Cmd
@@ -115,13 +115,13 @@ parseClimb = do
    (match "right" >> return Go_Right)
 
 -- Parse a meditation command.
-parseMeditate :: Parser String Cmd
+{-parseMeditate :: Parser String Cmd
 parseMeditate = do
   match "meditate"
   match "for"
   n <- number
   if n == 1 then match "second" else match "seconds"
-  return (Meditate n)
+  return (Meditate n)-}
 
 -- Parse a quit command
 parseQuit :: Parser String Cmd
