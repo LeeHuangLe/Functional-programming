@@ -27,7 +27,7 @@ data BinCxt = Hole
 -- tree is accomplished by the following function
 plug :: BinCxt -> Bin -> Bin
 plug  Hole      t              = t
-plug (B0 c (N id tile _t2))  t = plug c (N id tile t t2)
+plug (B0 c (N id tile _ t2))  t = plug c (N id tile t t2)
 plug (B1 (N id tile t1 _) c) t = plug c (N id tile t1 t)
 
 -- A zipper is a pair of a one-hole context c and a tree t, which we
@@ -50,7 +50,7 @@ go_right _              = Nothing           -- (leaf => no right child)
 
 go_down :: BinZip  -> Maybe (BinZip )
 go_down (B0 c (N id tile _ r), t) = Just (c, N id tile t r)
-go_down (B1 (N id tile l _), c, t)= Just (c, N id tile l t)
+go_down (B1 (N id tile l _) c, t)= Just (c, N id tile l t)
 go_down _                         = Nothing
 
 
@@ -128,10 +128,10 @@ teleport (Just bz) idWanted source = do
 -- It is also easy to implement operations that perform simple edits,
 -- such as say grafting another tree off to the left or right of the
 -- the subtree in focus.
-graft_left :: Bin -> BinZip -> BinZip
+{-graft_left :: Bin -> BinZip -> BinZip
 graft_left g (c, t) = (c, N EmptyTile g t)
 graft_right :: Bin -> BinZip -> BinZip
-graft_right g (c, t) = (c, N EmptyTile t g)
+graft_right g (c, t) = (c, N EmptyTile t g)-}
 
 -- Finally, we include some pretty-printing routines for binary trees
 -- and binary tree zippers.
@@ -142,20 +142,20 @@ graft_right g (c, t) = (c, N EmptyTile t g)
 -- BinCxt as a function Tree String -> Tree String.
 
 treeFromBin :: Bin -> Tree String
-treeFromBin (L _ tile) = Node (show tile) []
-treeFromBin (N _ tile left right) =
-  Node (show tile) [treeFromBin left, treeFromBin right]
+treeFromBin (L id tile) = Node (show id ++ ": " ++ show tile) []
+treeFromBin (N id tile left right) =
+  Node (show id ++ ": " ++ show tile) [treeFromBin left, treeFromBin right]
 
 treeCxtFromBinCxt :: BinCxt -> Tree String -> Tree String
 treeCxtFromBinCxt Hole t = t
-treeCxtFromBinCxt (B0 c t2) t = treeCxtFromBinCxt c (N "*" [t, treeFromBin t2])
-treeCxtFromBinCxt (B1 t1 c) t = treeCxtFromBinCxt c (N "*" [treeFromBin t1, t])
+treeCxtFromBinCxt (B0 c t2) t = treeCxtFromBinCxt c (Node "*" [t, treeFromBin t2])
+treeCxtFromBinCxt (B1 t1 c) t = treeCxtFromBinCxt c (Node "*" [treeFromBin t1, t])
 
 treeFromBinZip :: BinZip -> Tree String
 treeFromBinZip (c, t) =
   let t' = treeFromBin t
-      markedRoot = Node (rootLabel t' ++ " @ <-- you") (subForest t')
-  in treeCxtFromBinCxt c markedRoot
+      marker = " @ <-- you"
+  in treeCxtFromBinCxt c (t' { rootLabel = rootLabel t' ++ marker })
 
 drawBin :: Bin -> String
 drawBin = drawTree . treeFromBin
