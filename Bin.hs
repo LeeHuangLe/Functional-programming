@@ -4,6 +4,7 @@
 module Bin where
 
 import Data.Tree
+import Control.Monad (mplus)
 
 --The type of information on each Node
 data Tile = Wall | Path | Pellet | Ghost | EmptyTile
@@ -25,9 +26,9 @@ data BinCxt = Hole
 -- Plugging a one-hole context with a binary tree to produce a binary
 -- tree is accomplished by the following function
 plug :: BinCxt -> Bin -> Bin
-plug  Hole      t = t
-plug (B0 c t2) t = plug c (N _ EmptyTile t t2)
-plug (B1 t1 c) t = plug c (N _ EmptyTile t1 t)
+plug  Hole      t              = t
+plug (B0 c (N id tile _t2))  t = plug c (N id tile t t2)
+plug (B1 (N id tile t1 _) c) t = plug c (N id tile t1 t)
 
 -- A zipper is a pair of a one-hole context c and a tree t, which we
 -- think of as defining a pointer to t as a subtree of u = plug c t.
@@ -40,17 +41,17 @@ type BinZip = (BinCxt, Bin)
 -- Maybe type, since the subtree may not have a child or a parent.)
 
 go_left :: BinZip -> Maybe (BinZip )
-go_left (c, N _ _ l r) = Just (B0 c r, l)  -- focus on the left child
-go_left _ = Nothing            -- (leaf => no left child)
+go_left (c, N id tile l r) = Just (B0 c r, l)  -- focus on the left child
+go_left _                  = Nothing            -- (leaf => no left child)
 
 go_right :: BinZip  -> Maybe (BinZip)
 go_right (c, N _ _ l r) = Just (B1 l c, r) -- focus on the right child
 go_right _              = Nothing           -- (leaf => no right child)
 
 go_down :: BinZip  -> Maybe (BinZip )
-go_down (B0 c r, t) = Just (c, N EmptyTile t r)    -- focus on parent *from* left child
-go_down (B1 l c, t) = Just (c, N EmptyTile l t)    -- focus on parent *from* right child
-go_down _ = Nothing            -- (root => no parent)
+go_down (B0 c (N id tile _ r), t) = Just (c, N id tile t r)
+go_down (B1 (N id tile l _), c, t)= Just (c, N id tile l t)
+go_down _                         = Nothing
 
 
 get_id :: Maybe BinZip -> Maybe Int
@@ -77,7 +78,7 @@ BinCtx_equal (B1 b1 c1) (B1 b2 c2) = (BinCtx_equal c1 c2) && (Bin_equal b1 b2)
 binzip_equal :: BinZip -> BinZip -> Bool
 binzip_equal ((a, b)) ((c, d)) = ((a == c) && (b == d))
 
-teleport :: Maybe BinZip -> Int -> BinZip -> Maybe (BinZip)
+{-teleport :: Maybe BinZip -> Int -> BinZip -> Maybe (BinZip)
 teleport Nothing _ _ = Nothing
 teleport (Just bz) id_wanted (source) = do   
   let l1 = (go_left  bz) 
@@ -106,12 +107,27 @@ teleport (Just bz) id_wanted (source) = do
 
                   (Just bz3) -> if binzip_equal bz3 source 
                                 then Nothing 
-                                else (Just bz3)
+                                else (Just bz3)-}
 
-                                 -- It is also easy to implement operations that perform simple edits,
+teleport :: Maybe BinZip -> Int -> BinZip -> Maybe BinZip
+teleport Nothing _ _ = Nothing
+teleport (Just bz) idWanted source = do
+  let l1 = go_left bz
+      r1 = go_right bz
+      d1 = go_down bz
+  if get_id l1 == Just idWanted then l1
+  else if get_id r1 == Just idWanted then r1
+  else if get_id d1 == Just idWanted then d1
+  else
+    let searchNext = mplus (mplus (teleport l1 idWanted source)
+                                  (teleport r1 idWanted source))
+                           (teleport d1 idWanted source)
+    in searchNext >>= \bzFound -> if binzip_equal bzFound source then Nothing else Just bzFound
+
+
+-- It is also easy to implement operations that perform simple edits,
 -- such as say grafting another tree off to the left or right of the
 -- the subtree in focus.
-
 graft_left :: Bin -> BinZip -> BinZip
 graft_left g (c, t) = (c, N EmptyTile g t)
 graft_right :: Bin -> BinZip -> BinZip
@@ -126,9 +142,9 @@ graft_right g (c, t) = (c, N EmptyTile t g)
 -- BinCxt as a function Tree String -> Tree String.
 
 treeFromBin :: Bin -> Tree String
-treeFromBin EmptyTile = N "Empty" []
-treeFromBin (N tile left right) =
-  N (show tile) [treeFromBin left, treeFromBin right]
+treeFromBin (L _ tile) = Node (show tile) []
+treeFromBin (N _ tile left right) =
+  Node (show tile) [treeFromBin left, treeFromBin right]
 
 treeCxtFromBinCxt :: BinCxt -> Tree String -> Tree String
 treeCxtFromBinCxt Hole t = t
@@ -138,8 +154,8 @@ treeCxtFromBinCxt (B1 t1 c) t = treeCxtFromBinCxt c (N "*" [treeFromBin t1, t])
 treeFromBinZip :: BinZip -> Tree String
 treeFromBinZip (c, t) =
   let t' = treeFromBin t
-      marker = " @ <-- you"
-  in treeCxtFromBinCxt c (t' { rootLabel = rootLabel t' ++ marker })
+      markedRoot = Node (rootLabel t' ++ " @ <-- you") (subForest t')
+  in treeCxtFromBinCxt c markedRoot
 
 drawBin :: Bin -> String
 drawBin = drawTree . treeFromBin
