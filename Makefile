@@ -1,5 +1,5 @@
 GHC = ghc
-GHC_FLAGS = -package containers
+GHC_FLAGS = -dynamic
 
 SRC = BinTreeWorld.hs
 EXE = BinTreeWorld

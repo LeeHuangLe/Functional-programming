@@ -26,7 +26,7 @@ newtype Parser tok a = Parser { runParser :: [tok] -> Maybe (a,[tok]) }
 
     -- Of a thing and a string!
 
--- Anyways, we will use the fact that for any type `tok` of tokens,
+--  Anyways, we will use the fact that for any type `tok` of tokens,
 -- `Parser tok` defines a monad.
 instance Monad (Parser tok) where
   -- return :: a -> Parser tok a
@@ -104,7 +104,7 @@ number = do
 -- parseCmd is our general-purpose parser for commands, which can be
 -- either climbing commands, meditation commands, or quitting.
 parseCmd :: Parser String Cmd
-parseCmd = parseClimb <|> parseQuit
+parseCmd = parseClimb <|> parseQuit <|> parseShow
 
 -- Parse a climbing command.
 parseClimb :: Parser String Cmd
@@ -128,6 +128,12 @@ parseQuit :: Parser String Cmd
 parseQuit = do
   match "quit" <|> match "q"
   return Quit
+
+parseShow :: Parser String Cmd
+parseShow = do 
+  match "show" <|> match "s"
+  return Show
+
 
 -- Finally, we export a function that runs a parser on the entire input string, broken up into words.
 -- This function runs in any MonadFail monad, to deal with the possiblity of failure.
