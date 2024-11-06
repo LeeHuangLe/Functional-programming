@@ -2,6 +2,7 @@
 module GhostMovements where
 
 import Bin
+import MoveFunctions
 import System.Random 
 
 
@@ -33,34 +34,8 @@ remove_ghost (Just (c, L i Ghost)) = Just (c, L i EmptyTile)
 remove_ghost (Just x) = Just x
 remove_ghost Nothing = Nothing
 
-is_leaf ::  BinZip -> Bool
-is_leaf (c, L _ _) = True
-is_leaf (c, N _ _ _ _) = False
-
-data Direction = DDown | LLeft | RRight deriving(Show,Eq)
-
-determine_down :: Maybe BinZip -> Maybe BinZip -> Maybe BinZip
-determine_down Nothing _ = Nothing
-determine_down _ Nothing = Nothing
-determine_down b c = let x = go_left b
-                         y = go_right b
-                      in if ((get_id y) == (get_id c))
-                         then y
-                         else if ((get_id x) == (get_id c))
-                              then x
-                              else Nothing
 -- given two nodes b and c, possibly neighbors, if c is a child of b, then returns which child.
 -- useful if we are navegating in the tree 
-determine_down_direction :: Maybe BinZip -> Maybe BinZip -> Maybe Direction
-determine_down_direction _ Nothing = Nothing 
-determine_down_direction Nothing _ = Nothing
-determine_down_direction b c = let x = go_left b
-                                   y = go_right b
-                                   in if ((get_id y) == (get_id c))
-                                      then (Just RRight)
-                                      else if ((get_id x) == (get_id c))
-                                           then (Just LLeft)
-                                           else Nothing
 -- same for last function, but determines the direction of the child
 
 moveGhost_case :: Maybe BinZip -> Int -> Maybe BinZip
@@ -88,70 +63,73 @@ moveGhost_case b 3 = case (go_down (remove_ghost b)) of
                                           l1 -> l1
 
 
-moveGhost :: Maybe BinZip -> Maybe BinZip
-moveGhost Nothing = Nothing
-moveGhost b = if (has_ghost b)
-              then moveGhost_case b 1
-              else if (has_just_moved_ghost b)
-                   then put_ghost b
-                   else b
+getRandomInt  :: Int -> Int -> StdGen -> Int 
+getRandomInt low high gen = fst (randomR (low ,high) gen)
 
-updateTree :: Maybe BinZip -> Bool -> Direction -> Maybe BinZip
-updateTree Nothing _ _ = Nothing
-updateTree b True _       = case go_down (updateTree (go_left b) False DDown) of
-                                     Nothing -> case go_down (updateTree (go_right b) False DDown) of
+moveGhost :: Maybe BinZip -> Int -> Maybe BinZip
+moveGhost Nothing _ = Nothing
+moveGhost b seed = if (has_ghost b)
+                   then moveGhost_case b (getRandomInt 1 3 (mkStdGen seed))
+                   else if (has_just_moved_ghost b)
+                        then put_ghost b
+                        else b
+
+updateTree :: Maybe BinZip -> Bool -> Direction -> Int -> Maybe BinZip
+updateTree Nothing _ _ _       = Nothing
+updateTree b True _ seed       = case go_down (updateTree (go_left b) False DDown seed) of
+                                     Nothing -> case go_down (updateTree (go_right b) False DDown seed) of
                                                    Nothing -> case (determine_down_direction (go_down b) b) of 
-                                                                  Nothing -> (moveGhost b)
-                                                                  Just di -> case determine_down (updateTree (go_down b) False di) b of
-                                                                                Nothing -> (moveGhost b)
-                                                                                x3 -> (moveGhost x3)
+                                                                  Nothing -> (moveGhost b seed)
+                                                                  Just di -> case determine_down (updateTree (go_down b) False di seed) b of
+                                                                                Nothing -> (moveGhost b seed)
+                                                                                x3 -> (moveGhost x3 seed)
                                                    x1 -> case (determine_down_direction (go_down x1) x1) of
-                                                                  Nothing -> (moveGhost x1)
-                                                                  Just di -> case determine_down (updateTree (go_down x1) False di) b of
-                                                                                Nothing -> (moveGhost x1)
-                                                                                x3 -> (moveGhost x3)
-                                     x2 ->  case go_down (updateTree (go_right x2) False DDown) of
-                                                   Nothing -> case (determine_down_direction (go_down x2) b ) of 
-                                                                  Nothing -> (moveGhost x2)
-                                                                  Just di -> case determine_down (updateTree (go_down x2) False di) b of
-                                                                                Nothing -> (moveGhost x2)
-                                                                                x3 -> (moveGhost x3)
+                                                                  Nothing -> (moveGhost x1 seed)
+                                                                  Just di -> case determine_down (updateTree (go_down x1) False di seed) b of
+                                                                                Nothing -> (moveGhost x1 seed)
+                                                                                x3 -> (moveGhost x3 seed)
+                                     x2 ->  case go_down (updateTree (go_right x2) False DDown seed) of
+                                                   Nothing -> case (determine_down_direction (go_down x2) b) of 
+                                                                  Nothing -> (moveGhost x2 seed)
+                                                                  Just di -> case determine_down (updateTree (go_down x2) False di seed) b of
+                                                                                Nothing -> (moveGhost x2 seed )
+                                                                                x3 -> (moveGhost x3 seed)
                                                    x1 -> case (determine_down_direction (go_down x1) b) of
-                                                                  Nothing -> (moveGhost x1)
-                                                                  Just di -> case determine_down (updateTree (go_down x1) False di) b of
-                                                                                Nothing -> (moveGhost x1)
-                                                                                x3 -> (moveGhost x3)
+                                                                  Nothing -> (moveGhost x1 seed)
+                                                                  Just di -> case determine_down (updateTree (go_down x1) False di seed) b of
+                                                                                Nothing -> (moveGhost x1 seed )
+                                                                                x3 -> (moveGhost x3 seed)
 
-updateTree b False DDown  = case go_down (updateTree (go_left b) False DDown) of
-                                    Nothing -> case go_down (updateTree (go_right b) False DDown) of
-                                                  Nothing -> (moveGhost b)
-                                                  x2 -> (moveGhost x2) 
-                                    x1 -> case go_down (updateTree (go_right x1) False DDown) of
-                                                  Nothing -> (moveGhost x1)
-                                                  x3 -> (moveGhost x3)
+updateTree b False DDown seed = case go_down (updateTree (go_left b) False DDown seed) of
+                                    Nothing -> case go_down (updateTree (go_right b) False DDown seed) of
+                                                  Nothing -> (moveGhost b seed)
+                                                  x2 -> (moveGhost x2 seed) 
+                                    x1 -> case go_down (updateTree (go_right x1) False DDown seed) of
+                                                  Nothing -> (moveGhost x1 seed)
+                                                  x3 -> (moveGhost x3 seed)
 
-updateTree b False RRight = case go_down (updateTree (go_left b) False DDown) of 
-                                    Nothing -> case (determine_down_direction (go_down b) b) of 
-                                                  Nothing -> (moveGhost b)
-                                                  Just di -> case determine_down (updateTree (go_down b) False di) b of
-                                                              Nothing -> (moveGhost b)
-                                                              x3 -> (moveGhost x3)
+updateTree b False RRight seed = case go_down (updateTree (go_left b) False DDown seed) of 
+                                    Nothing -> case (determine_down_direction (go_down b) b ) of 
+                                                  Nothing -> (moveGhost b seed)
+                                                  Just di -> case determine_down (updateTree (go_down b) False di seed) b of
+                                                              Nothing -> (moveGhost b seed)
+                                                              x3 -> (moveGhost x3 seed)
                                     x1 -> case (determine_down_direction (go_down x1) x1) of 
-                                                  Nothing -> (moveGhost x1)
-                                                  Just di -> case determine_down (updateTree (go_down x1) False di) x1 of
-                                                              Nothing -> (moveGhost x1)
-                                                              x3 -> (moveGhost x3)
+                                                  Nothing -> (moveGhost x1 seed)
+                                                  Just di -> case determine_down (updateTree (go_down x1) False di seed) x1 of
+                                                              Nothing -> (moveGhost x1 seed)
+                                                              x3 -> (moveGhost x3 seed)
 
-updateTree b False LLeft = case go_down (updateTree (go_right b) False DDown) of 
-                                    Nothing -> case (determine_down_direction (go_down b) b) of 
-                                                  Nothing -> (moveGhost b)
-                                                  Just di -> case determine_down (updateTree (go_down b) False di) b of
-                                                              Nothing -> (moveGhost b)
-                                                              x3 -> (moveGhost x3)
+updateTree b False LLeft seed = case go_down (updateTree (go_right b) False DDown seed) of 
+                                    Nothing -> case (determine_down_direction (go_down b) b ) of 
+                                                  Nothing -> (moveGhost b seed)
+                                                  Just di -> case determine_down (updateTree (go_down b) False di seed) b of
+                                                              Nothing -> (moveGhost b seed)
+                                                              x3 -> (moveGhost x3 seed)
                                     x1 -> case (determine_down_direction (go_down x1) x1) of 
-                                                  Nothing -> (moveGhost x1)
-                                                  Just di -> case determine_down (updateTree (go_down x1) False di) x1 of
-                                                              Nothing -> (moveGhost x1)
-                                                              x3 -> (moveGhost x3)
+                                                  Nothing -> (moveGhost x1 seed)
+                                                  Just di -> case determine_down (updateTree (go_down x1) False di seed) x1 of
+                                                              Nothing -> (moveGhost x1 seed)
+                                                              x3 -> (moveGhost x3 seed)
 
 
