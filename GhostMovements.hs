@@ -5,34 +5,39 @@ import Bin
 import MoveFunctions
 import System.Random 
 
+has_pellet :: Maybe BinZip -> Bool
+has_pellet Nothing = False
+has_pellet (Just (_, N _ Pellet _ _)) = True
+has_pellet (Just (_, L _ Pellet ))    = True 
+has_pellet (Just (_,_))               = False
 
 has_ghost :: Maybe BinZip -> Bool
 has_ghost Nothing = False
 has_ghost (Just (_, N _ Ghost _ _)) = True
-has_ghost (Just (_, L _ Ghost )) = True 
-has_ghost (Just (_,_))  = False
+has_ghost (Just (_, L _ Ghost ))    = True 
+has_ghost (Just (_,_))              = False
 
 has_just_moved_ghost :: Maybe BinZip -> Bool
-has_just_moved_ghost Nothing = False
 has_just_moved_ghost (Just (_, N _ Just_moved_Ghost _ _)) = True
-has_just_moved_ghost (Just (_, L _ Just_moved_Ghost )) = True 
-has_just_moved_ghost (Just (_,_))  = False
+has_just_moved_ghost (Just (_, L _ Just_moved_Ghost ))    = True 
+has_just_moved_ghost (Just (_,_))                         = False
+has_just_moved_ghost Nothing                              = False
 
 put_ghost :: Maybe BinZip -> Maybe BinZip
-put_ghost Nothing = Nothing
+put_ghost Nothing               = Nothing
 put_ghost (Just (c, N i _ r l)) = Just (c, N i Ghost r l)
-put_ghost (Just (c, L i _ )) = Just (c, L i Ghost)
+put_ghost (Just (c, L i _ ))    = Just (c, L i Ghost)
 
 put_just_moved_ghost :: Maybe BinZip -> Maybe BinZip
-put_just_moved_ghost Nothing = Nothing
+put_just_moved_ghost Nothing               = Nothing
 put_just_moved_ghost (Just (c, N i _ r l)) = Just (c, N i Just_moved_Ghost r l)
-put_just_moved_ghost (Just (c, L i _ )) = Just (c, L i Just_moved_Ghost)
+put_just_moved_ghost (Just (c, L i _ ))    = Just (c, L i Just_moved_Ghost)
 
 remove_ghost :: Maybe BinZip -> Maybe BinZip
 remove_ghost (Just (c, N i Ghost r l)) = Just (c, N i EmptyTile r l)
-remove_ghost (Just (c, L i Ghost)) = Just (c, L i EmptyTile)
-remove_ghost (Just x) = Just x
-remove_ghost Nothing = Nothing
+remove_ghost (Just (c, L i Ghost))     = Just (c, L i EmptyTile)
+remove_ghost (Just x)                  = Just x
+remove_ghost Nothing                   = Nothing
 
 -- given two nodes b and c, possibly neighbors, if c is a child of b, then returns which child.
 -- useful if we are navegating in the tree 
@@ -42,21 +47,21 @@ moveGhost_case :: Maybe BinZip -> Int -> Maybe BinZip
 moveGhost_case Nothing _ = Nothing
 moveGhost_case b 1 = case (go_left (remove_ghost b)) of
                         Nothing -> moveGhost_case b 3
-                        l -> if (has_ghost l) || (has_just_moved_ghost l)
+                        l -> if ((has_ghost l) || (has_just_moved_ghost l)) || (has_pellet l)
                                   then b
                                   else case (go_down (put_just_moved_ghost l)) of
                                           Nothing -> b
                                           l1 -> l1
 moveGhost_case b 2 = case (go_right (remove_ghost b)) of
                         Nothing -> moveGhost_case b 3
-                        l -> if (has_ghost l) || (has_just_moved_ghost l)
+                        l -> if ((has_ghost l) || (has_just_moved_ghost l)) || (has_pellet l)
                                   then b
                                   else case (go_down (put_just_moved_ghost l)) of
                                           Nothing -> b
                                           l1 -> l1
 moveGhost_case b 3 = case (go_down (remove_ghost b)) of
                         Nothing -> moveGhost_case b 1
-                        l -> if (has_ghost l) || (has_just_moved_ghost l)
+                        l -> if ((has_ghost l) || (has_just_moved_ghost l) || has_pellet l)
                                   then b
                                   else case (determine_down (put_just_moved_ghost l) b) of
                                           Nothing -> b

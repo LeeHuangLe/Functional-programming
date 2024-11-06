@@ -7,7 +7,7 @@ import Data.Tree
 import Control.Monad (mplus)
 
 --The type of information on each Node
-data Tile = Wall | Pellet | Ghost | EmptyTile | Pacman | Just_moved_Ghost
+data Tile = Wall | Pellet | Ghost | EmptyTile | Just_moved_Ghost
   deriving (Eq, Show)
 
 --The type of binary tree 
