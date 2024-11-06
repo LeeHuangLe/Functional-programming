@@ -67,10 +67,6 @@ handleTile (N _ Wall _ _)   = putStrLn "You see a Wall. You cannot move here."
 handleTile (N _ EmptyTile _ _) = putStrLn "You see an empty space."
 handleTile (N _ Ghost _ _)  = putStrLn "You see a Ghost. Watch out!"
 
-
-
-
-
 -- Try moving in the specified direction, handling game rules
 tryMove :: (Maybe BinZip -> Maybe BinZip) -> String -> BinZip -> Int -> Int -> Int -> IO ()
 tryMove move dir z score lives seed = do
