@@ -1,8 +1,8 @@
 Project Description:
 
 This is a Game that emulates pacman in a binary tree.
-The objective is to collect all pellets without dying.
-You die by touching a ghosts, and you lose a life. If you lose all your 3 lifes, you lose.
+The objective is to collect all pellets without losing.
+Whenever you touch a ghost (arrives at the same node as them), you lose a life. If you lose all your 3 lifes, you lose.
 The commands are:
  - climb left (follows to the left node of the bin tree)
  - climb right (follows to the right node of the bin tree)
