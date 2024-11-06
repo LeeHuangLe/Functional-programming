@@ -7,7 +7,7 @@ import Data.Tree
 import Control.Monad (mplus)
 
 --The type of information on each Node
-data Tile = Wall | Path | Pellet | Ghost | EmptyTile | Pacman
+data Tile = Wall | Path | Pellet | Ghost | EmptyTile | Pacman | Just_moved_Ghost
   deriving (Eq, Show)
 
 --The type of binary tree 
@@ -33,7 +33,7 @@ plug (B1 t1 c tile id) t = plug c (N id tile t1 t)
 -- A zipper is a pair of a one-hole context c and a tree t, which we
 -- think of as defining a pointer to t as a subtree of u = plug c t.
 type BinZip = (BinCxt, Bin)
--- (The terminology comes from Gérard Huet's paper, "The Zipper".)
+  -- (The terminology comes from Gérard Huet's paper, "The Zipper".)
 
 -- The following functions implement moving the pointer up to the
 -- left child, up to the right child, or down to the parent of a

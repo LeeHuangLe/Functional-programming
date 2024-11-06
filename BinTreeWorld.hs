@@ -5,11 +5,10 @@ import Parser
 import Bin (Bin, BinZip, Tile(..), go_left, go_right, go_down, drawBinZip)
 import Parser (parseInput)
 import System.IO (hFlush, stdout)
-import GhostMovements (moveGhost)
+import GhostMovements (updateTree,Direction(..))
 
 import System.IO
-import Control.Concurrent (threadDelay)
-import System.Random (randomRIO)
+import Control.Concurrent (threadDelay) 
 -- a small binary tree
 complexTree :: Bin
 complexTree = N 1 Pacman 
@@ -18,7 +17,7 @@ complexTree = N 1 Pacman
                  (N 4  Ghost 
                    (L 5 Wall) 
                    (L 6 EmptyTile)))
-               (N 7 Wall 
+               (N 7 Ghost 
                  (N 8 Path 
                    (L 9 Pellet) 
                    (L 1 Wall)) 
@@ -74,7 +73,7 @@ handleTile (N _ Path _ _)  = putStrLn "You see a Path"
 -- Try moving in the specified direction, handling game rules
 tryMove :: (Maybe BinZip -> Maybe BinZip) -> String -> BinZip -> Int -> Int -> IO ()
 tryMove move dir z score lives = do
-                                  case move (moveGhost (Just z)) of
+                                  case ((updateTree (move (Just z)) True LLeft)) of
                                     Just newZ -> case snd newZ of
                                                     L _ Wall -> do
                                                       putStrLn $ "You cannot move " ++ dir ++ ", there's a Wall."
