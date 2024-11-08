@@ -1,13 +1,14 @@
 GHC = ghc
-GHC_FLAGS=-package containers
+GHC_FLAGS=-dynamic
 
-SRC = BinTreeWorld.hs
-EXE = BinTreeWorld
+SRC = BinPacman.hs
+EXE = BinPacman
 
 all: $(EXE)
 
 $(EXE): $(SRC)
 	$(GHC) $(GHC_FLAGS) -o $(EXE) $(SRC)
+	rm -f *.o *.hi
 
 clean:
 	rm -f $(EXE) *.o *.hi

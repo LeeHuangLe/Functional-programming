@@ -59,7 +59,6 @@ go z score lives seed n = do
                                             (Just Go_Down)  -> tryMove go_down "down" z score lives (seed+1) n
                                             (Just Show)     -> do 
                                                                 putStrLn (drawBinZip z)
-                                                                putStrLn ("The number is: " ++ show n)
                                                                 go z score lives (seed+1) n
                                                                 
                                             (Just Quit)     -> do
@@ -68,7 +67,7 @@ go z score lives seed n = do
                                                                 putStrLn (drawBinZip z)
                                                                 putStrLn $ "Final Score: " ++ show score
                                                                 putStrLn "Goodbye."
-                                else putStrLn "Congratulations, You collected all pellets and you won."
+                                else putStrLn "Congratulations, You collected all pellets and you won!"
 
     -- Display current tile and handle interaction
 displayCurrentPosition :: BinZip -> IO ()
