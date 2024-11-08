@@ -1,5 +1,5 @@
 # Project Description - BinPacman
-This is a Game that emulates pacman in a binary tree.
+This is a Game that emulates Pacman in a binary tree.
 The objective is to collect all pellets without losing.
 Whenever you touch a ghost (i.e. arrive at the same node as them), you lose a life. If you lose all your 3 lives, you lose.
 The commands are:
@@ -19,6 +19,7 @@ The commands are:
     2) They may wait still because of the way it was implemented (check Just_moved_Ghost and Ghost constructors);
     3) Function updateTree scans the tree starting from current pacman position, and it navigates in all directions (down, left and right) without scanning the same node twice and it moves a ghost, if possible;
     4) They don't go to nodes with pellets on it;
+    5) To avoid weird behaviour, we added a type called Just_moved_Ghost, which prevents the ghost to be scanned multiple times in case it moves in the direction of the scanning.
  - We update a seed every iteration of go function, so we have random ghost movements;
  - When all pellets are collected, The game ends automatically;
 
@@ -34,13 +35,14 @@ The commands are:
 
 There may be different ways to build the project:
  - Make sure that all necessary modules are installed in your local machine;
+ - Additional module used: 'System.Random'
  - On Windows, use the Makefile with the flag 'GHC_FLAGS=-package containers';
  - On Linux, use the Makefile with the flag 'GHC_FLAGS=-dynamic';
 
 ## Members:
  - Bruno Fernandes Iorio
  - Lee Huang
- - Timofey Fedoseev
+ - Timofei Fedoseev
 
 
 

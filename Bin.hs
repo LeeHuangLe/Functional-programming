@@ -73,8 +73,9 @@ treeFromBin (N id tile left right) =
 
 treeCxtFromBinCxt :: BinCxt -> Tree String -> Tree String
 treeCxtFromBinCxt Hole t = t
-treeCxtFromBinCxt (B0 c t2 tile id) t = treeCxtFromBinCxt c (Node "*" [t, treeFromBin t2])
-treeCxtFromBinCxt (B1 t1 c tile id) t = treeCxtFromBinCxt c (Node "*" [treeFromBin t1, t] )
+treeCxtFromBinCxt (B0 c t2 tile id) t = treeCxtFromBinCxt c (Node (show id ++ ": " ++ (show (filter_Ghost tile))) [t, treeFromBin t2])
+treeCxtFromBinCxt (B1 t1 c tile id) t = treeCxtFromBinCxt c (Node (show id ++ ": " ++ (show (filter_Ghost tile))) [treeFromBin t1, t] )
+
 
 treeFromBinZip :: BinZip -> Tree String
 treeFromBinZip (c, t) =
