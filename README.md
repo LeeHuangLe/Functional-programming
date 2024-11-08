@@ -1,4 +1,4 @@
-# Project Description
+# Project Description - BinPacman
 This is a Game that emulates pacman in a binary tree.
 The objective is to collect all pellets without losing.
 Whenever you touch a ghost (i.e. arrive at the same node as them), you lose a life. If you lose all your 3 lives, you lose.
@@ -37,7 +37,10 @@ There may be different ways to build the project:
  - On Windows, use the Makefile with the flag 'GHC_FLAGS=-package containers';
  - On Linux, use the Makefile with the flag 'GHC_FLAGS=-dynamic';
 
-
+## Members:
+ - Bruno Fernandes Iorio
+ - Lee Huang
+ - Timofey Fedoseev
 
 
 
